@@ -5,13 +5,13 @@ use App\RTTCalculator;
 include __DIR__ . '/vendor/autoload.php';
 
 if ($argc < 2) {
-    exit("Usage:\n  php rtt.php solde [YYYY-MM-DD]\n  php rtt.php pose YYYY-MM-DD X\n");
+    exit("Usage:\n  php rtt.php balance [YYYY-MM-DD]\n  php rtt.php pose YYYY-MM-DD X\n");
 }
 
 $calculator = new RTTCalculator();
 
 $action = $argv[1];
-if ($action === 'solde') {
+if ($action === 'balance') {
     $date = $argv[2] ?? date('Y-m-d');
 
     echo "Solde RTT au $date : " . $calculator->computeBalance(new DateTime($date)) . " jours\n";
