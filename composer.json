@@ -1,0 +1,16 @@
+{
+    "name": "golngaz/rtt",
+    "description": "Compute the RTT balance",
+    "autoload": {
+        "psr-4": {
+            "App\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Gaël",
+            "email": "golngaz@laposte.net"
+        }
+    ],
+    "require": {}
+}
