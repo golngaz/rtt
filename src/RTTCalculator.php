@@ -16,25 +16,29 @@ use const JSON_PRETTY_PRINT;
 
 class RTTCalculator
 {
+    private string $file;
+    private string $yearReference;
+
     public function __construct(
-        public float $byMonth = 1.5,
-        public ?string $file = null,
-        public ?string $yearReference = null,
+        private float $byMonth = 1.5,
+        ?string $file = null
     )
     {
-        $this->yearReference = $this->yearReference ?: (new DateTime)->format('Y');
+        $this->file = $file ?: __DIR__ . '/../data.json';
+        touch($this->file);
+    }
 
-        if ($this->file === null) {
-
-
-            $this->file = __DIR__ . '/../data_' . $this->yearReference . '.json';
-        }
+    public function setYearReference(?string $yearReference): void
+    {
+        $this->yearReference = $yearReference ?: (new DateTime)->format('Y');
 
         touch($this->file);
     }
 
     public function computeBalance(DateTime $date): float
     {
+        $this->setYearReference($date->format('Y'));
+
         $dateReference = new DateTime($this->yearReference.'-01-01');
         $interval = $dateReference->diff($date);
 
@@ -42,13 +46,15 @@ class RTTCalculator
 
         $data = $this->load();
 
-        $savedTakenCount = isset($data['taken']) ? count($data['taken']) : 0;
+        $savedTakenCount = isset($data[$this->yearReference]['taken']) ? count($data[$this->yearReference]['taken']) : 0;
 
         return $takenCount - $savedTakenCount;
     }
 
     public function takeRTT(DateTime $date, int $days): void
     {
+        $this->setYearReference($date->format('Y'));
+
         $data = $this->load();
 
         $takenDays = 0;
@@ -56,7 +62,7 @@ class RTTCalculator
         while ($takenDays < $days) {
             // Ignore samedis et dimanches
             if (!in_array($date->format('N'), [6, 7])) {
-                $data['taken'][] = $date->format('Y-m-d');
+                $data[$this->yearReference]['taken'][] = $date->format('Y-m-d');
 
                 $takenDays++;
             }
