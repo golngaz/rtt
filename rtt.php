@@ -5,7 +5,7 @@ use App\RTTCalculator;
 include __DIR__ . '/vendor/autoload.php';
 
 if ($argc < 2) {
-    exit("Usage:\n  php rtt.php balance [YYYY-MM-DD]\n  php rtt.php take YYYY-MM-DD X\n");
+    exit("Usage:\n  php rtt.php balance [YYYY-MM-DD]\n  php rtt.php take YYYY-MM-DD [X (how many) = 1]\n");
 }
 
 $calculator = new RTTCalculator();
@@ -16,10 +16,16 @@ if ($action === 'balance') {
 
     echo "Solde RTT au $date : " . $calculator->computeBalance(new DateTime($date)) . " jours\n";
 
-} elseif ($action === 'take' && $argc === 4) {
-    $calculator->takeRTT(new DateTime($argv[2]), (int) $argv[3]);
+} elseif ($action === 'take') {
+    if ($argc === 4) {
+        $days = (int) $argv[3];
+    } else {
+        $days = 1;
+    }
 
-    echo "RTT posés à partir du $argv[2] pour $argv[3] jours\n";
+    $calculator->takeRTT(new DateTime($argv[2]), $days);
+
+    echo "RTT posés à partir du $argv[2] pour $days jours\n";
 
 } else {
     exit("Commande invalide.\n");
