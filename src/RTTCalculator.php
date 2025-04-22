@@ -21,7 +21,8 @@ class RTTCalculator
 
     public function __construct(
         private float $byMonth = 1.5,
-        ?string $file = null
+        ?string $file = null,
+        private bool $computeFromEndMonth = false
     )
     {
         $this->file = $file ?: __DIR__ . '/../data.json';
@@ -42,13 +43,25 @@ class RTTCalculator
         $dateReference = new DateTime($this->yearReference.'-01-01');
         $interval = $dateReference->diff($date);
 
-        $takenCount = $interval->m * $this->byMonth;
+        $monthCount = $this->computeFromEndMonth ? $interval->m : $interval->m + 1;
+        $takenCount = $monthCount * $this->byMonth;
 
-        $data = $this->load();
-
-        $savedTakenCount = isset($data[$this->yearReference]['taken']) ? count($data[$this->yearReference]['taken']) : 0;
+        $savedTakenCount = $this->taken();
 
         return $takenCount - $savedTakenCount;
+    }
+
+    public function computeIgnoreTaken(DateTime $date): float
+    {
+        $this->setYearReference($date->format('Y'));
+
+        $dateReference = new DateTime($this->yearReference.'-01-01');
+        $interval = $dateReference->diff($date);
+
+        $monthCount = $this->computeFromEndMonth ? $interval->m : $interval->m + 1;
+        $takenCount = $monthCount * $this->byMonth;
+
+        return $takenCount;
     }
 
     public function takeRTT(DateTime $date, int $days): void
@@ -80,8 +93,17 @@ class RTTCalculator
         return $data ? json_decode($data, true) : [];
     }
 
-    private function save($data): void
+    public function save(?string $file = null): void
     {
-        file_put_contents($this->file, json_encode($data, JSON_PRETTY_PRINT));
+        $data = $this->load();
+
+        file_put_contents($file ?: $this->file, json_encode($data, JSON_PRETTY_PRINT));
+    }
+
+    public function taken(): int
+    {
+        $data = $this->load();
+
+        return isset($data[$this->yearReference]['taken']) ? count($data[$this->yearReference]['taken']) : 0;
     }
 }
