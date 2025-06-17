@@ -19,6 +19,8 @@ class RTTCalculator
     private string $file;
     private string $yearReference;
 
+    private array $data;
+
     public function __construct(
         private float $byMonth = 1.5,
         ?string $file = null,
@@ -83,7 +85,8 @@ class RTTCalculator
             $date->modify('+1 day');
         }
 
-        $this->save($data);
+        $this->data = $data;
+        $this->save();
     }
 
     private function load(): mixed
@@ -95,7 +98,7 @@ class RTTCalculator
 
     public function save(?string $file = null): void
     {
-        $data = $this->load();
+        $data = $this->data ?: $this->load();
 
         file_put_contents($file ?: $this->file, json_encode($data, JSON_PRETTY_PRINT));
     }
