@@ -12,14 +12,16 @@ use function json_decode;
 use function json_encode;
 use function touch;
 
+use function var_dump;
+
 use const JSON_PRETTY_PRINT;
 
 class RTTCalculator
 {
     private string $file;
-    private string $yearReference;
+    private string $reference;
 
-    private array $data;
+    private array $data = [];
 
     public function __construct(
         private float $byMonth = 1.5,
@@ -31,19 +33,19 @@ class RTTCalculator
         touch($this->file);
     }
 
-    public function setYearReference(?string $yearReference): void
+    public function setReference(?string $year): void
     {
-        $this->yearReference = $yearReference ?: (new DateTime)->format('Y');
+        $this->reference = $year ? $year.'-03-01' : (new DateTime)->format('Y').('-03-01');
 
         touch($this->file);
     }
 
     public function computeBalance(DateTime $date): float
     {
-        $this->setYearReference($date->format('Y'));
+        $this->setReference($date->format('Y'));
 
-        $dateReference = new DateTime($this->yearReference.'-01-01');
-        $interval = $dateReference->diff($date);
+        $dateReference = new DateTime($this->reference);
+        $interval = $dateReference->modify('+1 year')->diff($date);
 
         $monthCount = $this->computeFromEndMonth ? $interval->m : $interval->m + 1;
         $takenCount = $monthCount * $this->byMonth;
@@ -55,9 +57,9 @@ class RTTCalculator
 
     public function computeIgnoreTaken(DateTime $date): float
     {
-        $this->setYearReference($date->format('Y'));
+        $this->setReference($date->format('Y'));
 
-        $dateReference = new DateTime($this->yearReference.'-01-01');
+        $dateReference = new DateTime($this->reference);
         $interval = $dateReference->diff($date);
 
         $monthCount = $this->computeFromEndMonth ? $interval->m : $interval->m + 1;
@@ -68,7 +70,7 @@ class RTTCalculator
 
     public function takeRTT(DateTime $date, int $days): void
     {
-        $this->setYearReference($date->format('Y'));
+        $this->setReference($date->format('Y'));
 
         $data = $this->load();
 
@@ -77,7 +79,7 @@ class RTTCalculator
         while ($takenDays < $days) {
             // Ignore samedis et dimanches
             if (!in_array($date->format('N'), [6, 7])) {
-                $data[$this->yearReference]['taken'][] = $date->format('Y-m-d');
+                $data[$this->reference]['taken'][] = $date->format('Y-m-d');
 
                 $takenDays++;
             }
@@ -107,6 +109,6 @@ class RTTCalculator
     {
         $data = $this->load();
 
-        return isset($data[$this->yearReference]['taken']) ? count($data[$this->yearReference]['taken']) : 0;
+        return isset($data[$this->reference]['taken']) ? count($data[$this->reference]['taken']) : 0;
     }
 }
