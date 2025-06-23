@@ -33,7 +33,7 @@ class RTTCalculator
         touch($this->file);
     }
 
-    public function setReference(?string $year): void
+    private function setReference(?string $year): void
     {
         $this->reference = $year ? $year.'-03-01' : (new DateTime)->format('Y').('-03-01');
 
@@ -42,20 +42,10 @@ class RTTCalculator
 
     public function computeBalance(DateTime $date): float
     {
-        $this->setReference($date->format('Y'));
-
-        $dateReference = new DateTime($this->reference);
-        $interval = $dateReference->modify('+1 year')->diff($date);
-
-        $monthCount = $this->computeFromEndMonth ? $interval->m : $interval->m + 1;
-        $takenCount = $monthCount * $this->byMonth;
-
-        $savedTakenCount = $this->taken();
-
-        return $takenCount - $savedTakenCount;
+        return $this->computeBalanceAbsolute($date) - $this->taken();
     }
 
-    public function computeIgnoreTaken(DateTime $date): float
+    public function computeBalanceAbsolute(DateTime $date): float
     {
         $this->setReference($date->format('Y'));
 
@@ -63,9 +53,8 @@ class RTTCalculator
         $interval = $dateReference->diff($date);
 
         $monthCount = $this->computeFromEndMonth ? $interval->m : $interval->m + 1;
-        $takenCount = $monthCount * $this->byMonth;
 
-        return $takenCount;
+        return $monthCount * $this->byMonth;
     }
 
     public function takeRTT(DateTime $date, int $days): void

@@ -19,7 +19,7 @@ if ($action === 'balance') {
     $dateString = $argv[2] ?? date('Y-m-d');
 
     $date = new DateTime($dateString);
-    echo "Solde RTT restant au $dateString : " . $calculator->computeBalance($date) . " jours (solde total: " . $calculator->computeIgnoreTaken($date) . ") (pris : " . $calculator->taken() . ")\n";
+    echo "Solde RTT restant au $dateString : " . $calculator->computeBalance($date) . " jours (solde total: " . $calculator->computeBalanceAbsolute($date) . ") (pris : " . $calculator->taken() . ")\n";
 
 } elseif ($action === 'take') {
     if ($argc === 4) {
