@@ -24,7 +24,7 @@ class RTTCalculator
     public function __construct(
         private float $byMonth = 1.5,
         ?string $file = null,
-        private bool $computeFromEndMonth = false
+        private bool $computeFromEndMonth = true
     )
     {
         $this->file = $file ?: __DIR__ . '/../data.json';
@@ -33,9 +33,7 @@ class RTTCalculator
 
     private function setReference(?string $year): void
     {
-        $this->reference = $year ? $year.'-03-01' : (new DateTime)->format('Y').('-03-01');
-
-        touch($this->file);
+        $this->reference = $year ? $year.'-01-01' : (new DateTime)->format('Y').('-01-01');
     }
 
     public function computeBalance(DateTime $date): float
