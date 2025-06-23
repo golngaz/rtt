@@ -12,8 +12,6 @@ use function json_decode;
 use function json_encode;
 use function touch;
 
-use function var_dump;
-
 use const JSON_PRETTY_PRINT;
 
 class RTTCalculator
